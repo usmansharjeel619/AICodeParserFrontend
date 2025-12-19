@@ -1,0 +1,265 @@
+﻿<Window x:Class="AICodeParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:AICodeParser.ViewModels"
+        xmlns:converters="clr-namespace:AICodeParser.Converters"
+        Title="AI Code Parser Desktop" 
+        Height="800" 
+        Width="1400"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Window.Resources>
+        <!-- Converters -->
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="ModuleButton" TargetType="RadioButton" BasedOn="{StaticResource MaterialDesignTabRadioButton}">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <materialDesign:Card Grid.Row="0" Padding="15" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="AI Code Parser" 
+                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+                    <TextBlock Text="Analyze and verify C/C++ code using AI" 
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Opacity="0.68"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Connection" 
+                                            Width="24" 
+                                            Height="24"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,5,0">
+                        <materialDesign:PackIcon.Style>
+                            <Style TargetType="materialDesign:PackIcon">
+                                <Setter Property="Foreground" Value="Red"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsApiConnected}" Value="True">
+                                        <Setter Property="Foreground" Value="Green"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:PackIcon.Style>
+                    </materialDesign:PackIcon>
+                    <TextBlock Text="{Binding StatusText}" 
+                               VerticalAlignment="Center"
+                               FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Module Selection -->
+        <materialDesign:Card Grid.Row="1" Padding="15" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="Select Module:" 
+                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           Margin="0,0,0,10"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton Content="🔧 Debugging" 
+                                 Style="{StaticResource ModuleButton}"
+                                 IsChecked="{Binding SelectedModule, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Debugging}"/>
+
+                    <RadioButton Content="🧠 NLP Test Generation" 
+                                 Style="{StaticResource ModuleButton}"
+                                 IsChecked="{Binding SelectedModule, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=NLP}"/>
+
+                    <RadioButton Content="✅ Formal Verification" 
+                                 Style="{StaticResource ModuleButton}"
+                                 IsChecked="{Binding SelectedModule, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=FormalVerification}"/>
+                </StackPanel>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel - Input -->
+            <materialDesign:Card Grid.Column="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Input Header -->
+                    <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="15">
+                        <TextBlock Text="Code Input" 
+                                   Foreground="White"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"/>
+                    </Border>
+
+                    <!-- File Operations -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
+                        <Button Command="{Binding OpenFileCommand}"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Margin="0,0,5,0">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FolderOpen" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="Open File"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding SaveFileCommand}"
+                                Style="{StaticResource MaterialDesignRaisedButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="Save File"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Code Editor -->
+                    <TextBox Grid.Row="2" 
+                             Text="{Binding CodeInput, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="12"
+                             Margin="10"
+                             materialDesign:HintAssist.Hint="Enter or paste your C/C++ code here..."/>
+
+                    <!-- Additional Options -->
+                    <StackPanel Grid.Row="3" Margin="10">
+                        <!-- Show for Formal Verification -->
+                        <TextBox Text="{Binding FunctionName, UpdateSourceTrigger=PropertyChanged}"
+                                 materialDesign:HintAssist.Hint="Function Name (Optional)"
+                                 Margin="0,0,0,5"
+                                 Visibility="{Binding SelectedModule, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FormalVerification}"/>
+
+                        <!-- Show for NLP -->
+                        <TextBox Text="{Binding Specifications, UpdateSourceTrigger=PropertyChanged}"
+                                 materialDesign:HintAssist.Hint="Specifications (Optional)"
+                                 AcceptsReturn="True"
+                                 MaxLines="3"
+                                 Visibility="{Binding SelectedModule, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=NLP}"/>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Right Panel - Output -->
+            <materialDesign:Card Grid.Column="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Output Header -->
+                    <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="15">
+                        <TextBlock Text="Results" 
+                                   Foreground="White"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"/>
+                    </Border>
+
+                    <!-- Output Display -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding OutputText, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas"
+                                 FontSize="12"
+                                 Margin="10"
+                                 BorderThickness="0"
+                                 Background="Transparent"/>
+                    </ScrollViewer>
+
+                    <!-- Loading Indicator -->
+                    <Grid Grid.Row="1" 
+                          Background="#80000000" 
+                          Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVis}}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                        Value="0"
+                                        IsIndeterminate="True"
+                                        Width="50"
+                                        Height="50"/>
+                            <TextBlock Text="Processing..." 
+                                      Foreground="White"
+                                      Margin="0,10,0,0"
+                                      HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Action Buttons -->
+        <materialDesign:Card Grid.Row="3" Padding="15" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command="{Binding ProcessCodeCommand}"
+                        IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                        Width="150"
+                        Height="40"
+                        Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Process Code" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding CheckStatusCommand}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Width="150"
+                        Height="40"
+                        Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Information" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Check Status" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding ClearAllCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Width="150"
+                        Height="40"
+                        Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Close" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Clear All" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </materialDesign:Card>
+    </Grid>
+</Window>
