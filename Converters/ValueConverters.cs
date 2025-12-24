@@ -19,12 +19,10 @@ namespace AICodeParser.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null || parameter == null)
-                return Binding.DoNothing;
+                return null;
 
             if ((bool)value)
-            {
-                return Enum.Parse(typeof(ModuleType), parameter.ToString()!);
-            }
+                return Enum.Parse(typeof(ModuleType), parameter.ToString());
 
             return Binding.DoNothing;
         }
@@ -53,19 +51,32 @@ namespace AICodeParser.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
-            {
                 return !boolValue;
-            }
             return true;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
-            {
                 return !boolValue;
-            }
             return false;
+        }
+    }
+
+    public class ProcessingTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool isProcessing)
+            {
+                return isProcessing ? "Processing..." : "Analyze Code";
+            }
+            return "Analyze Code";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

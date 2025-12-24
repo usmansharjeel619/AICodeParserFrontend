@@ -10,5 +10,11 @@ namespace AICodeParser
             InitializeComponent();
             DataContext = viewModel;
         }
+
+        private void SimulinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            var simulinkWindow = new SimulinkWindow();
+            simulinkWindow.Show();
+        }
     }
 }

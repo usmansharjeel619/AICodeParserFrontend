@@ -3,21 +3,218 @@ using Newtonsoft.Json;
 
 namespace AICodeParser.Models
 {
-    // Request Models
+    public enum ModuleType
+    {
+        Debugging,
+        NLP,
+        FormalVerification
+    }
+
+    // ==================== DEBUG API MODELS ====================
+
     public class DebugRequest
     {
         [JsonProperty("code")]
         public string Code { get; set; } = string.Empty;
 
         [JsonProperty("filename")]
-        public string Filename { get; set; } = "temp.c";
+        public string Filename { get; set; } = "test.c";
     }
+
+    public class DebugResponse
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonProperty("file_path")]
+        public string FilePath { get; set; } = string.Empty;
+
+        [JsonProperty("compilation_analysis")]
+        public CompilationAnalysis CompilationAnalysis { get; set; } = new();
+
+        [JsonProperty("static_analysis")]
+        public StaticAnalysis StaticAnalysis { get; set; } = new();
+
+        [JsonProperty("runtime_analysis")]
+        public RuntimeAnalysis RuntimeAnalysis { get; set; } = new();
+
+        [JsonProperty("ai_analysis")]
+        public AiAnalysis AiAnalysis { get; set; } = new();
+
+        [JsonProperty("recommendations")]
+        public List<Recommendation> Recommendations { get; set; } = new();
+    }
+
+    public class CompilationAnalysis
+    {
+        [JsonProperty("compilation_successful")]
+        public bool CompilationSuccessful { get; set; }
+
+        [JsonProperty("command")]
+        public string Command { get; set; } = string.Empty;
+
+        [JsonProperty("errors")]
+        public string Errors { get; set; } = string.Empty;
+    }
+
+    public class StaticAnalysis
+    {
+        [JsonProperty("line_count")]
+        public int LineCount { get; set; }
+
+        [JsonProperty("function_count")]
+        public int FunctionCount { get; set; }
+
+        [JsonProperty("code_metrics")]
+        public CodeMetrics CodeMetrics { get; set; } = new();
+
+        [JsonProperty("potential_issues")]
+        public List<string> PotentialIssues { get; set; } = new();
+    }
+
+    public class CodeMetrics
+    {
+        [JsonProperty("cyclomatic_complexity")]
+        public int CyclomaticComplexity { get; set; }
+
+        [JsonProperty("comment_ratio")]
+        public double CommentRatio { get; set; }
+
+        [JsonProperty("avg_function_length")]
+        public double AvgFunctionLength { get; set; }
+    }
+
+    public class RuntimeAnalysis
+    {
+        // Add properties as needed
+    }
+
+    public class AiAnalysis
+    {
+        [JsonProperty("root_cause")]
+        public string RootCause { get; set; } = string.Empty;
+
+        [JsonProperty("fix_suggestions")]
+        public List<string> FixSuggestions { get; set; } = new();
+
+        [JsonProperty("prevention")]
+        public List<string> Prevention { get; set; } = new();
+
+        [JsonProperty("confidence")]
+        public double Confidence { get; set; }
+    }
+
+    public class Recommendation
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; } = string.Empty;
+
+        [JsonProperty("category")]
+        public string Category { get; set; } = string.Empty;
+
+        [JsonProperty("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonProperty("priority")]
+        public string Priority { get; set; } = string.Empty;
+    }
+
+    // ==================== NLP API MODELS ====================
 
     public class NlpRequest
     {
-        [JsonProperty("specifications")]
-        public string Specifications { get; set; } = string.Empty;
+        [JsonProperty("code")]
+        public string Code { get; set; } = string.Empty;
     }
+
+    public class NlpResponse
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonProperty("analyzed_code")]
+        public string AnalyzedCode { get; set; } = string.Empty;
+
+        [JsonProperty("functions_found")]
+        public int FunctionsFound { get; set; }
+
+        [JsonProperty("discovered_functions")]
+        public List<string> DiscoveredFunctions { get; set; } = new();
+
+        [JsonProperty("functions_details")]
+        public List<FunctionDetail> FunctionsDetails { get; set; } = new();
+
+        [JsonProperty("test_cases")]
+        public Dictionary<string, TestCaseGroup> TestCases { get; set; } = new();
+
+        [JsonProperty("total_tests")]
+        public int TotalTests { get; set; }
+
+        [JsonProperty("unit_test_code")]
+        public string UnitTestCode { get; set; } = string.Empty;
+    }
+
+    public class FunctionDetail
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonProperty("signature")]
+        public string Signature { get; set; } = string.Empty;
+
+        [JsonProperty("return_type")]
+        public string ReturnType { get; set; } = string.Empty;
+
+        [JsonProperty("parameters")]
+        public List<Parameter> Parameters { get; set; } = new();
+
+        [JsonProperty("line_number")]
+        public int LineNumber { get; set; }
+    }
+
+    public class Parameter
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonProperty("type")]
+        public string Type { get; set; } = string.Empty;
+    }
+
+    public class TestCaseGroup
+    {
+        [JsonProperty("functional_tests")]
+        public List<TestCase> FunctionalTests { get; set; } = new();
+
+        [JsonProperty("boundary_tests")]
+        public List<TestCase> BoundaryTests { get; set; } = new();
+
+        [JsonProperty("error_tests")]
+        public List<TestCase> ErrorTests { get; set; } = new();
+
+        [JsonProperty("performance_tests")]
+        public List<TestCase> PerformanceTests { get; set; } = new();
+
+        [JsonProperty("all_tests")]
+        public List<TestCase> AllTests { get; set; } = new();
+    }
+
+    public class TestCase
+    {
+        [JsonProperty("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonProperty("input")]
+        public string Input { get; set; } = string.Empty;
+
+        [JsonProperty("expected_output")]
+        public string ExpectedOutput { get; set; } = string.Empty;
+
+        [JsonProperty("test_code")]
+        public string TestCode { get; set; } = string.Empty;
+    }
+
+    // ==================== FORMAL VERIFICATION API MODELS ====================
 
     public class FormalRequest
     {
@@ -28,153 +225,65 @@ namespace AICodeParser.Models
         public string FunctionName { get; set; } = string.Empty;
     }
 
-    // Response Models
-    public class ApiResponse<T>
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; } = string.Empty;
-
-        [JsonProperty("message")]
-        public string Message { get; set; } = string.Empty;
-
-        [JsonProperty("data")]
-        public T? Data { get; set; }
-
-        [JsonProperty("error")]
-        public string? Error { get; set; }
-    }
-
-    public class DebugResponse
-    {
-        [JsonProperty("success")]
-        public bool Success { get; set; }
-
-        [JsonProperty("issues")]
-        public List<DebugIssue> Issues { get; set; } = new();
-
-        [JsonProperty("suggestions")]
-        public List<string> Suggestions { get; set; } = new();
-
-        [JsonProperty("output")]
-        public string Output { get; set; } = string.Empty;
-    }
-
-    public class DebugIssue
-    {
-        [JsonProperty("line")]
-        public int Line { get; set; }
-
-        [JsonProperty("type")]
-        public string Type { get; set; } = string.Empty;
-
-        [JsonProperty("description")]
-        public string Description { get; set; } = string.Empty;
-    }
-
-    public class StatusResponse
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; } = string.Empty;
-
-        [JsonProperty("chatdbg_available")]
-        public bool? ChatDbgAvailable { get; set; }
-
-        [JsonProperty("llmdebugger_available")]
-        public bool? LlmDebuggerAvailable { get; set; }
-
-        [JsonProperty("gdb_available")]
-        public bool? GdbAvailable { get; set; }
-
-        [JsonProperty("device")]
-        public string? Device { get; set; }
-
-        [JsonProperty("models_loaded")]
-        public bool? ModelsLoaded { get; set; }
-
-        [JsonProperty("functions_discovered")]
-        public int? FunctionsDiscovered { get; set; }
-
-        [JsonProperty("framac_available")]
-        public bool? FramacAvailable { get; set; }
-
-        [JsonProperty("llm_available")]
-        public bool? LlmAvailable { get; set; }
-    }
-
-    public class NlpResponse
-    {
-        [JsonProperty("generated_tests")]
-        public List<GeneratedTest> GeneratedTests { get; set; } = new();
-
-        [JsonProperty("summary")]
-        public string Summary { get; set; } = string.Empty;
-    }
-
-    public class GeneratedTest
-    {
-        [JsonProperty("test_name")]
-        public string TestName { get; set; } = string.Empty;
-
-        [JsonProperty("test_code")]
-        public string TestCode { get; set; } = string.Empty;
-
-        [JsonProperty("description")]
-        public string Description { get; set; } = string.Empty;
-    }
-
-    public class FunctionInfo
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonProperty("signature")]
-        public string Signature { get; set; } = string.Empty;
-
-        [JsonProperty("file")]
-        public string File { get; set; } = string.Empty;
-    }
-
-    public class FunctionsResponse
-    {
-        [JsonProperty("functions")]
-        public List<FunctionInfo> Functions { get; set; } = new();
-
-        [JsonProperty("count")]
-        public int Count { get; set; }
-    }
-
     public class FormalResponse
     {
-        [JsonProperty("verified")]
-        public bool Verified { get; set; }
+        [JsonProperty("function_name")]
+        public string FunctionName { get; set; } = string.Empty;
 
         [JsonProperty("contracts")]
-        public List<string> Contracts { get; set; } = new();
+        public Contracts Contracts { get; set; } = new();
 
-        [JsonProperty("violations")]
-        public List<string> Violations { get; set; } = new();
+        [JsonProperty("acsl_code")]
+        public string AcslCode { get; set; } = string.Empty;
 
-        [JsonProperty("report")]
-        public string Report { get; set; } = string.Empty;
+        [JsonProperty("validation")]
+        public Validation Validation { get; set; } = new();
+
+        [JsonProperty("metadata")]
+        public Metadata Metadata { get; set; } = new();
     }
+
+    public class Contracts
+    {
+        [JsonProperty("preconditions")]
+        public List<string> Preconditions { get; set; } = new();
+
+        [JsonProperty("postconditions")]
+        public List<string> Postconditions { get; set; } = new();
+    }
+
+    public class Validation
+    {
+        [JsonProperty("valid")]
+        public bool Valid { get; set; }
+
+        [JsonProperty("warnings")]
+        public List<string> Warnings { get; set; } = new();
+
+        [JsonProperty("errors")]
+        public List<string> Errors { get; set; } = new();
+    }
+
+    public class Metadata
+    {
+        [JsonProperty("template_used")]
+        public bool TemplateUsed { get; set; }
+
+        [JsonProperty("ai_enhanced")]
+        public bool AiEnhanced { get; set; }
+
+        [JsonProperty("category")]
+        public string Category { get; set; } = string.Empty;
+    }
+
+    // ==================== HEALTH CHECK ====================
 
     public class HealthResponse
     {
         [JsonProperty("status")]
         public string Status { get; set; } = string.Empty;
 
-        [JsonProperty("message")]
-        public string Message { get; set; } = string.Empty;
-
-        [JsonProperty("version")]
-        public string Version { get; set; } = string.Empty;
-    }
-
-    // Enums
-    public enum ModuleType
-    {
-        Debugging,
-        NLP,
-        FormalVerification
+        [JsonProperty("timestamp")]
+        public string Timestamp { get; set; } = string.Empty;
     }
 }

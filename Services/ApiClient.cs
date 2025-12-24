@@ -12,12 +12,8 @@ namespace AICodeParser.Services
     {
         Task<bool> CheckHealthAsync();
         Task<DebugResponse> DebugCodeAsync(string code, string filename);
-        Task<StatusResponse> GetDebugStatusAsync();
-        Task<NlpResponse> GenerateTestsAsync(string specifications);
-        Task<FunctionsResponse> GetFunctionsAsync();
-        Task<StatusResponse> GetNlpStatusAsync();
+        Task<NlpResponse> AnalyzeCodeAsync(string code);
         Task<FormalResponse> VerifyCodeAsync(string code, string functionName);
-        Task<StatusResponse> GetFormalStatusAsync();
     }
 
     public class ApiClient : IApiClient
@@ -34,6 +30,8 @@ namespace AICodeParser.Services
 
             var timeout = _configuration.GetValue<int>("ApiSettings:Timeout", 300);
             _httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+            _httpClient.DefaultRequestHeaders.Accept.Add(
+                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task<bool> CheckHealthAsync()
@@ -76,34 +74,42 @@ namespace AICodeParser.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<DebugResponse>(responseContent)
-                           ?? new DebugResponse();
+                    var debugResponse = JsonConvert.DeserializeObject<DebugResponse>(responseContent);
+                    return debugResponse ?? new DebugResponse { Status = "Error parsing response" };
                 }
                 else
                 {
-                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(responseContent);
-                    throw new Exception(errorResponse?.Error ?? "Unknown error occurred");
+                    return new DebugResponse
+                    {
+                        Status = $"Error: {response.StatusCode}",
+                        CompilationAnalysis = new CompilationAnalysis
+                        {
+                            Errors = responseContent
+                        }
+                    };
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to debug code: {ex.Message}", ex);
+                return new DebugResponse
+                {
+                    Status = "Error",
+                    CompilationAnalysis = new CompilationAnalysis
+                    {
+                        Errors = $"Failed to debug code: {ex.Message}"
+                    }
+                };
             }
         }
 
-        public async Task<StatusResponse> GetDebugStatusAsync()
-        {
-            return await GetStatusAsync(_configuration["ApiSettings:Endpoints:DebugStatus"]);
-        }
-
-        public async Task<NlpResponse> GenerateTestsAsync(string specifications)
+        public async Task<NlpResponse> AnalyzeCodeAsync(string code)
         {
             try
             {
-                var endpoint = _configuration["ApiSettings:Endpoints:NlpGenerate"];
+                var endpoint = _configuration["ApiSettings:Endpoints:NlpAnalyze"];
                 var request = new NlpRequest
                 {
-                    Specifications = specifications
+                    Code = code
                 };
 
                 var json = JsonConvert.SerializeObject(request);
@@ -114,49 +120,24 @@ namespace AICodeParser.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<NlpResponse>(responseContent)
-                           ?? new NlpResponse();
+                    var nlpResponse = JsonConvert.DeserializeObject<NlpResponse>(responseContent);
+                    return nlpResponse ?? new NlpResponse { Status = "Error parsing response" };
                 }
                 else
                 {
-                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(responseContent);
-                    throw new Exception(errorResponse?.Error ?? "Unknown error occurred");
+                    return new NlpResponse
+                    {
+                        Status = $"Error: {response.StatusCode} - {responseContent}"
+                    };
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to generate tests: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<FunctionsResponse> GetFunctionsAsync()
-        {
-            try
-            {
-                var endpoint = _configuration["ApiSettings:Endpoints:NlpFunctions"];
-                var response = await _httpClient.GetAsync($"{_baseUrl}{endpoint}");
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
+                return new NlpResponse
                 {
-                    return JsonConvert.DeserializeObject<FunctionsResponse>(content)
-                           ?? new FunctionsResponse();
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(content);
-                    throw new Exception(errorResponse?.Error ?? "Unknown error occurred");
-                }
+                    Status = $"Failed to analyze code: {ex.Message}"
+                };
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to get functions: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<StatusResponse> GetNlpStatusAsync()
-        {
-            return await GetStatusAsync(_configuration["ApiSettings:Endpoints:NlpStatus"]);
         }
 
         public async Task<FormalResponse> VerifyCodeAsync(string code, string functionName)
@@ -178,47 +159,39 @@ namespace AICodeParser.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<FormalResponse>(responseContent)
-                           ?? new FormalResponse();
+                    var formalResponse = JsonConvert.DeserializeObject<FormalResponse>(responseContent);
+                    return formalResponse ?? new FormalResponse { FunctionName = functionName };
                 }
                 else
                 {
-                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(responseContent);
-                    throw new Exception(errorResponse?.Error ?? "Unknown error occurred");
+                    return new FormalResponse
+                    {
+                        FunctionName = functionName,
+                        Validation = new Validation
+                        {
+                            Valid = false,
+                            Errors = new System.Collections.Generic.List<string>
+                            {
+                                $"Error: {response.StatusCode} - {responseContent}"
+                            }
+                        }
+                    };
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to verify code: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<StatusResponse> GetFormalStatusAsync()
-        {
-            return await GetStatusAsync(_configuration["ApiSettings:Endpoints:FormalStatus"]);
-        }
-
-        private async Task<StatusResponse> GetStatusAsync(string endpoint)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_baseUrl}{endpoint}");
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
+                return new FormalResponse
                 {
-                    return JsonConvert.DeserializeObject<StatusResponse>(content)
-                           ?? new StatusResponse();
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ApiResponse<object>>(content);
-                    throw new Exception(errorResponse?.Error ?? "Unknown error occurred");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to get status: {ex.Message}", ex);
+                    FunctionName = functionName,
+                    Validation = new Validation
+                    {
+                        Valid = false,
+                        Errors = new System.Collections.Generic.List<string>
+                        {
+                            $"Failed to verify code: {ex.Message}"
+                        }
+                    }
+                };
             }
         }
     }
